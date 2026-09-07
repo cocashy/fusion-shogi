@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="2つの駒がひとつになる、フュージョン将棋" />
+    <title>フュージョン将棋</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <h1>フュージョン将棋</h1>
+        <div class="header-actions">
+          <button id="reset-button" class="secondary-button" type="button">最初から</button>
+          <button id="help-button" class="secondary-button" type="button" aria-expanded="false" aria-controls="rules-card">ヘルプ</button>
+        </div>
+      </header>
+
+      <section class="game-layout" aria-label="フュージョン将棋の盤面">
+        <section class="player-strip white-panel" aria-label="後手の操作と持ち駒">
+          <div class="player-heading">
+            <span class="player-stone white-stone" aria-hidden="true"></span>
+            <h2>後手</h2>
+          </div>
+          <label class="mode-control" for="white-mode">
+            <select id="white-mode" aria-label="後手の指し手">
+              <option value="human">人間</option>
+              <option value="computer">CPU</option>
+            </select>
+          </label>
+          <div id="white-hand" class="hand" aria-label="後手の持ち駒"></div>
+        </section>
+
+        <section class="board-card">
+          <div class="board-frame">
+            <div class="file-labels" aria-hidden="true">
+              <span>９</span><span>８</span><span>７</span><span>６</span><span>５</span><span>４</span><span>３</span><span>２</span><span>１</span>
+            </div>
+            <div class="board-row">
+              <div class="rank-labels" aria-hidden="true">
+                <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>七</span><span>八</span><span>九</span>
+              </div>
+              <div id="board" class="board" role="grid" aria-label="将棋盤"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="player-strip black-panel" aria-label="先手の操作と持ち駒">
+          <div class="player-heading">
+            <span class="player-stone black-stone" aria-hidden="true"></span>
+            <h2>先手</h2>
+          </div>
+          <label class="mode-control" for="black-mode">
+            <select id="black-mode" aria-label="先手の指し手">
+              <option value="human">人間</option>
+              <option value="computer">CPU</option>
+            </select>
+          </label>
+          <div id="black-hand" class="hand" aria-label="先手の持ち駒"></div>
+        </section>
+      </section>
+
+      <section id="rules-card" class="rules-card" hidden>
+        <div>
+          <h2>融合ルール</h2>
+        </div>
+        <div class="rules-grid">
+          <p><span>01</span> 自駒Aが自駒Bに利いているとき、AをBのマスへ動かすと融合。</p>
+          <p><span>02</span> 融合駒は元の2駒の動きの和集合を持ちます。</p>
+          <p><span>03</span> 王・成駒・融合済みの駒は融合できません。</p>
+          <p><span>04</span> 融合駒を取ると、元の2駒が相手の持ち駒になります。</p>
+          <p><span>05</span> 王手放置・二歩・行き所のない駒打ちなど、通常将棋のルールを適用。</p>
+        </div>
+      </section>
+    </main>
+
+    <div id="promotion-dialog" class="dialog-backdrop" hidden>
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="promotion-title">
+        <h2 id="promotion-title">成りますか？</h2>
+        <div class="dialog-actions">
+          <button id="promote-button" class="primary-button" type="button">成る</button>
+          <button id="keep-button" class="secondary-button" type="button">成らない</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "fusion-shogi",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/game.js && node --check src/main.js",
+    "start": "python -m http.server 4173"
+  }
+}
