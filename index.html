@@ -12,6 +12,14 @@
       <header class="app-header">
         <h1>フュージョン将棋</h1>
         <div class="header-actions">
+          <label class="difficulty-control" for="ai-level">
+            <span>CPU強さ</span>
+            <select id="ai-level" aria-label="CPUの強さ">
+              <option value="easy">やさしい</option>
+              <option value="normal" selected>標準</option>
+              <option value="strong">強い</option>
+            </select>
+          </label>
           <button id="reset-button" class="secondary-button" type="button">最初から</button>
           <button id="help-button" class="secondary-button" type="button" aria-expanded="false" aria-controls="rules-card">ヘルプ</button>
         </div>
