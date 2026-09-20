@@ -16,6 +16,16 @@ function movesFrom(game, row, col) {
   return game.getLegalMoves().filter((move) => move.kind === "move" && move.from.row === row && move.from.col === col);
 }
 
+function stateSnapshot(game) {
+  return {
+    state: game.toJSON(),
+    lastMove: game.lastMove,
+    moveNumber: game.moveNumber,
+    gameOver: game.gameOver,
+    result: game.result,
+  };
+}
+
 test("駒名は二文字、融合駒は強さ順の一文字ずつで表示する", () => {
   assert.equal(pieceGlyph(createPiece(PLAYERS.BLACK, TYPES.PAWN)), "歩兵");
   assert.equal(pieceGlyph(createPiece(PLAYERS.BLACK, TYPES.KING)), "王将");
@@ -143,4 +153,53 @@ test("通常将棋の打ち歩詰めを禁止する", () => {
     hands: { [PLAYERS.BLACK]: { [TYPES.PAWN]: 1 } },
   });
   assert.equal(game.getLegalMoves().some((move) => move.kind === "drop" && move.type === TYPES.PAWN && move.to.row === 1 && move.to.col === 4), false);
+});
+
+test("makeMoveとunmakeMoveは通常手・成り・融合・駒打ちを完全に復元する", () => {
+  const cases = [
+    position({
+      pieces: [
+        { row: 8, col: 8, owner: PLAYERS.BLACK, type: TYPES.KING },
+        { row: 0, col: 0, owner: PLAYERS.WHITE, type: TYPES.KING },
+        { row: 6, col: 3, owner: PLAYERS.BLACK, type: TYPES.BISHOP },
+        { row: 5, col: 4, owner: PLAYERS.BLACK, type: TYPES.ROOK },
+      ],
+    }),
+    position({
+      pieces: [
+        { row: 8, col: 8, owner: PLAYERS.BLACK, type: TYPES.KING },
+        { row: 0, col: 0, owner: PLAYERS.WHITE, type: TYPES.KING },
+        { row: 1, col: 4, owner: PLAYERS.BLACK, type: TYPES.PAWN },
+      ],
+    }),
+    position({
+      pieces: [
+        { row: 8, col: 8, owner: PLAYERS.BLACK, type: TYPES.KING },
+        { row: 0, col: 0, owner: PLAYERS.WHITE, type: TYPES.KING },
+        { row: 6, col: 4, owner: PLAYERS.BLACK, type: TYPES.ROOK },
+        { row: 5, col: 4, owner: PLAYERS.WHITE, type: TYPES.PAWN },
+      ],
+    }),
+    position({
+      pieces: [
+        { row: 8, col: 8, owner: PLAYERS.BLACK, type: TYPES.KING },
+        { row: 0, col: 0, owner: PLAYERS.WHITE, type: TYPES.KING },
+      ],
+      hands: { [PLAYERS.BLACK]: { [TYPES.PAWN]: 1 } },
+    }),
+  ];
+
+  for (const game of cases) {
+    const move = game.getLegalMoves().find((candidate) => (
+      candidate.fusion
+      || candidate.promote
+      || candidate.kind === "drop"
+      || candidate.to.row === 5
+    ));
+    assert.ok(move);
+    const before = stateSnapshot(game);
+    const undo = game.makeMove(move);
+    game.unmakeMove(undo);
+    assert.deepEqual(stateSnapshot(game), before);
+  }
 });

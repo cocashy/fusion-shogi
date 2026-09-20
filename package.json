@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/game.js && node --check src/main.js",
+    "check": "node --check src/game.js && node --check src/ai/engine.js && node --check src/main.js && node --check scripts/ai-benchmark.js",
+    "benchmark": "node scripts/ai-benchmark.js",
     "start": "python -m http.server 4173"
   }
 }

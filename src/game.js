@@ -434,16 +434,100 @@ export class FusionShogiGame {
     return this.getLegalMoves({ forPlayer: nextPlayer, ignorePawnDropMate: true }).length === 0;
   }
 
+  makeMove(move) {
+    const player = this.turn;
+    const undo = {
+      turn: this.turn,
+      moveNumber: this.moveNumber,
+      gameOver: this.gameOver,
+      result: this.result ? { ...this.result } : null,
+      lastMove: this.lastMove ? JSON.parse(JSON.stringify(this.lastMove)) : null,
+      kind: move.kind,
+      to: { ...move.to },
+      movingPiece: null,
+      movingState: null,
+      target: null,
+      handCounts: [],
+    };
+
+    if (move.kind === "drop") {
+      undo.target = this.board[move.to.row][move.to.col];
+      undo.handCounts.push({ type: move.type, count: this.getHand(player, move.type) });
+    } else {
+      const movingPiece = this.board[move.from.row][move.from.col];
+      if (!movingPiece) throw new Error("No piece at the source square");
+      const target = this.board[move.to.row][move.to.col];
+      undo.from = { ...move.from };
+      undo.movingPiece = movingPiece;
+      undo.movingState = clonePiece(movingPiece);
+      undo.target = target;
+      if (target && target.owner !== player) {
+        const capturedTypes = target.fused
+          ? target.components
+          : target.type === TYPES.KING ? [] : [target.type];
+        for (const type of capturedTypes) {
+          if (!undo.handCounts.some((entry) => entry.type === type)) {
+            undo.handCounts.push({ type, count: this.getHand(player, type) });
+          }
+        }
+      }
+    }
+
+    this.applyMoveUnchecked(move);
+    return undo;
+  }
+
+  unmakeMove(undo) {
+    const hand = this.hands[playerIndex(undo.turn)];
+    for (const { type, count } of undo.handCounts) {
+      if (count > 0) hand.set(type, count);
+      else hand.delete(type);
+    }
+
+    if (undo.kind === "drop") {
+      this.board[undo.to.row][undo.to.col] = undo.target;
+    } else {
+      const movingPiece = undo.movingPiece;
+      Object.assign(movingPiece, {
+        owner: undo.movingState.owner,
+        type: undo.movingState.type,
+        promoted: undo.movingState.promoted,
+        fused: undo.movingState.fused,
+        components: undo.movingState.components ? [...undo.movingState.components] : null,
+      });
+      this.board[undo.from.row][undo.from.col] = movingPiece;
+      this.board[undo.to.row][undo.to.col] = undo.target;
+    }
+
+    this.turn = undo.turn;
+    this.moveNumber = undo.moveNumber;
+    this.gameOver = undo.gameOver;
+    this.result = undo.result ? { ...undo.result } : null;
+    this.lastMove = undo.lastMove ? JSON.parse(JSON.stringify(undo.lastMove)) : null;
+  }
+
   getLegalMoves({ forPlayer = this.turn, ignorePawnDropMate = false } = {}) {
     if (this.gameOver) return [];
     const legal = [];
-    for (const move of this.pseudoMoves(forPlayer)) {
-      const next = this.clone();
-      next.turn = forPlayer;
-      next.applyMoveUnchecked(move);
-      if (next.isInCheck(forPlayer)) continue;
-      if (!ignorePawnDropMate && next.isPawnDropMate(move, opposite(forPlayer))) continue;
-      legal.push(move);
+    const originalTurn = this.turn;
+    const pseudoMoves = this.pseudoMoves(forPlayer);
+    this.turn = forPlayer;
+    try {
+      for (const move of pseudoMoves) {
+        const undo = this.makeMove(move);
+        let isLegal = true;
+        try {
+          if (this.isInCheck(forPlayer)) isLegal = false;
+          if (isLegal && !ignorePawnDropMate && this.isPawnDropMate(move, opposite(forPlayer))) {
+            isLegal = false;
+          }
+        } finally {
+          this.unmakeMove(undo);
+        }
+        if (isLegal) legal.push(move);
+      }
+    } finally {
+      this.turn = originalTurn;
     }
     return legal;
   }
