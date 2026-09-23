@@ -75,6 +75,7 @@ h1 { margin-bottom: 0; font-family: Georgia, "Yu Mincho", serif; font-size: clam
 .square.selected { background: #f1d18f; box-shadow: inset 0 0 0 3px rgba(49, 94, 171, .55); }
 .square.legal::after { content: ""; position: absolute; width: 22%; aspect-ratio: 1; border-radius: 50%; background: rgba(49, 94, 171, .75); }
 .square.legal.fusion-target::after { width: 82%; border: 3px solid rgba(119, 86, 167, .9); border-radius: 10px; background: rgba(173, 137, 224, .27); }
+.square.legal.capture-target::after { width: 82%; border: 3px solid rgba(49, 94, 171, .9); border-radius: 10px; background: rgba(49, 94, 171, .12); }
 .piece-token { position: relative; z-index: 1; display: block; width: 90%; height: 90%; clip-path: polygon(50% 0, 84% 18%, 100% 100%, 0 100%, 16% 18%); background: #5d4328; filter: drop-shadow(0 1px 1px rgba(66, 40, 17, .45)); }
 .piece-token::before { content: ""; position: absolute; inset: 2px; clip-path: polygon(50% 0, 84% 18%, 100% 100%, 0 100%, 16% 18%); background: #f8e8c6; }
 .piece-glyph { position: absolute; z-index: 1; top: 56%; left: 50%; display: flex; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 40cqw; font-weight: 700; line-height: 1; letter-spacing: 0; writing-mode: horizontal-tb; user-select: none; transform: translate(-50%, -50%); }
