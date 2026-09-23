@@ -175,22 +175,30 @@ function renderBoard() {
       square.setAttribute("aria-label", coordinateLabel(row, col));
       const piece = game.getPiece(row, col);
       const key = `${row},${col}`;
+      const destinations = movesForSquare(row, col);
+      const isLegalDestination = legalDestinationKeys.has(key);
+      const isFusionTarget = destinations.some((move) => move.fusion);
+      const isCaptureTarget = destinations.some((move) => (
+        move.kind === "move"
+        && !move.fusion
+        && piece
+        && piece.owner !== game.turn
+      ));
+      const destinationHint = isCaptureTarget ? "駒取り" : isFusionTarget ? "融合" : "移動";
       if (lastMove && squareKey(lastMove.to) === key) square.classList.add("last-move");
       if (selection?.kind === "board" && selection.from.row === row && selection.from.col === col) square.classList.add("selected");
-      if (legalDestinationKeys.has(key)) {
-        const destinations = movesForSquare(row, col);
+      if (isLegalDestination) {
         square.classList.add("legal");
-        if (destinations.some((move) => move.fusion)) square.classList.add("fusion-target");
-        square.setAttribute("aria-label", `${coordinateLabel(row, col)}、${destinations.some((move) => move.fusion) ? "融合" : "移動"}`);
+        if (isFusionTarget) square.classList.add("fusion-target");
+        if (isCaptureTarget) square.classList.add("capture-target");
+        square.setAttribute("aria-label", `${coordinateLabel(row, col)}、${destinationHint}`);
       }
       if (piece) {
         square.classList.add(piece.owner === PLAYERS.BLACK ? "black-piece" : "white-piece");
         if (piece.promoted) square.classList.add("promoted-piece");
         if (piece.fused) square.classList.add("fused-piece");
-        const destinationHint = legalDestinationKeys.has(key)
-          ? `、${movesForSquare(row, col).some((move) => move.fusion) ? "融合" : "移動"}`
-          : "";
-        square.setAttribute("aria-label", `${coordinateLabel(row, col)}、${pieceAccessibleLabel(piece)}${destinationHint}`);
+        const destinationLabel = isLegalDestination ? `、${destinationHint}` : "";
+        square.setAttribute("aria-label", `${coordinateLabel(row, col)}、${pieceAccessibleLabel(piece)}${destinationLabel}`);
         const token = document.createElement("span");
         token.className = "piece-token";
         if (piece.promoted) token.classList.add("promoted-token");
